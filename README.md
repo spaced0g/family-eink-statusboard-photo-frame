@@ -85,7 +85,7 @@ I originally tested an [immmich photo frame](https://github.com/jwchen119/EPF), 
 ```yaml
 services:
   frame-server:
-    image: python:3.9-slim
+    image: python:3.15-slim
     container_name: frame-server
     restart: unless-stopped
     ports:
@@ -97,6 +97,9 @@ services:
     volumes:
       - ./frame-server/app:/app
       - ./frame-server/config.yaml:/config/config.yaml # not really needed to link outside, as it is generated with the settings.html
+    working_dir: /app
+    command: >
+      sh -c "pip install --no-cache-dir -r requirements.txt && python app.py"
 ```
 
 ## Home Assistant Integration
