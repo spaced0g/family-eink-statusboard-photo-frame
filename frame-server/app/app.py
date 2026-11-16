@@ -13,7 +13,7 @@ from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from statusboard import StatusBoard
 from datetime import datetime, timedelta
-from cpy import convert_image, load_scaled
+from epaper import convert_image, load_scaled
 
 app = Flask(__name__, template_folder="/app")
 register_heif_opener()
@@ -178,13 +178,12 @@ def _select_asset(assets, image_order: str, albumname: str):
 
 def _process_immich_image(image: Image.Image, rotation: int, display_mode: str,
                           img_enhanced: float, img_contrast: float, strength: float) -> Image.Image:
-    # Use cython helper for scaling to EPD size (800x480)
     image = ImageOps.exif_transpose(image)
     img = load_scaled(image, rotation, display_mode)
     enhanced_img = ImageEnhance.Color(img).enhance(img_enhanced)
     enhanced_img = ImageEnhance.Contrast(enhanced_img).enhance(img_contrast)
     output_img = convert_image(enhanced_img, dithering_strength=strength)
-    return Image.fromarray(output_img, mode="RGB")
+    return Image.fromarray(output_img)
 
 
 def render_immich_image(config):
@@ -581,7 +580,7 @@ def download():
             image = image.rotate(sb_rot, expand=True)
         # Dithering to preserve greys/text
         strength = float(current_config.get("statusboard", {}).get("dither_strength", 0.8))
-        image = Image.fromarray(convert_image(image, dithering_strength=strength), mode="RGB")
+        image = Image.fromarray(convert_image(image, dithering_strength=strength))
 
     # In C-Code konvertieren
     c_code_bytes = convert_to_c_code_in_memory(image)
